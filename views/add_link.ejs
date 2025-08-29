@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Business Type Form</title>
+  <style>
+    :root{
+      --bg: #ffffff;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --accent: #2563eb;
+      --accent-2: #1d4ed8;
+      --ring: #93c5fd;
+      --ok: #16a34a;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial;
+      color: var(--text);
+      background: var(--bg);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 560px;
+      background: var(--card);
+      border: 1px solid #e5e7eb;
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .logo {
+      width: 42px; height: 42px; border-radius: 11px;
+      background: conic-gradient(from 180deg at 50% 50%, var(--accent), var(--ok), var(--accent-2));
+    }
+    h1 {
+      font-size: 22px;
+      margin: 0;
+    }
+    p.sub {
+      margin: 0 0 22px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    form { display: grid; gap: 18px; }
+
+    .field label { display: block; font-size: 14px; color: var(--muted); margin-bottom: 8px; }
+    .input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+      color: var(--text);
+      font-size: 16px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--ring);
+      outline: none;
+    }
+
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .toggle-label { color: var(--muted); font-size: 14px; }
+
+    .switch { position: relative; width: 64px; height: 34px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; inset: 0; cursor: pointer; border-radius: 999px;
+      background: #e5e7eb;
+      transition: background .2s;
+    }
+    .slider::before {
+      content: ""; position: absolute; left: 4px; top: 4px; width: 26px; height: 26px;
+      border-radius: 50%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      transition: transform .2s;
+    }
+    input:checked + .slider {
+      background: var(--accent);
+    }
+    input:checked + .slider::before { transform: translateX(30px); }
+
+    .type-pill {
+      font-size: 12px; padding: 6px 10px; border-radius: 999px; border: 1px solid #d1d5db;
+      background: #f9fafb; color: var(--text);
+    }
+
+    .actions { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+    .btn {
+      border: none; cursor: pointer; padding: 12px 16px; border-radius: 12px;
+      font-size: 15px; font-weight: 600; color: white;
+      background: linear-gradient(180deg, var(--accent), var(--accent-2));
+      transition: transform .04s ease;
+    }
+    .btn:active { transform: translateY(1px); }
+
+    .hint { color: var(--muted); font-size: 12px; }
+
+    .footer { margin-top: 22px; display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 12px; }
+    .footer code { color: var(--text); padding: 2px 6px; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="header">
+      <div class="logo"></div>
+      <div>
+        <h1>Business Onboarding</h1>
+        <p class="sub">Enter your business name, choose the type, and submit.</p>
+      </div>
+    </div>
+
+    <form id="biz-form" onsubmit="handleSubmit(event)">
+      <div class="field">
+        <label for="businessName">Business Name</label>
+        <input class="input" id="businessName" name="businessName" type="text" placeholder="e.g., Sunrise Traders" required />
+        <div class="hint">Only one input, as requested.</div>
+      </div>
+
+      <div class="field">
+        <div class="toggle-row">
+          <span class="toggle-label">Business Type</span>
+          <span class="type-pill" id="typePill">Individual</span>
+          <label class="switch">
+            <input id="typeToggle" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+          <span class="toggle-label">Company</span>
+        </div>
+        <input type="hidden" id="businessType" name="businessType" value="individual" />
+      </div>
+
+      <div class="actions">
+        <button class="btn" type="submit">Submit</button>
+        <span class="hint" id="resultHint">&nbsp;</span>
+      </div>
+
+      <div class="footer">
+        <span>Keyboard: press <code>Tab</code> then <code>Space</code> to toggle.</span>
+        <span id="status"></span>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    const toggle = document.getElementById('typeToggle');
+    const pill = document.getElementById('typePill');
+    const hidden = document.getElementById('businessType');
+    const resultHint = document.getElementById('resultHint');
+    const status = document.getElementById('status');
+
+    function updateTypeUI(){
+      const isCompany = toggle.checked;
+      pill.textContent = isCompany ? 'Company' : 'Individual';
+      hidden.value = isCompany ? 'company' : 'individual';
+      status.textContent = `Type set to ${pill.textContent}`;
+    }
+
+    toggle.addEventListener('change', updateTypeUI);
+    updateTypeUI();
+
+    function handleSubmit(e){
+      e.preventDefault();
+      const data = {
+        businessName: document.getElementById('businessName').value.trim(),
+        businessType: hidden.value,
+      };
+      resultHint.textContent = `Submitted: "${data.businessName}" as ${data.businessType}.`;
+    }
+  </script>
+</body>
+</html>
